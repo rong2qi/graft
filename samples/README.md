@@ -35,6 +35,12 @@ about it.
 | [saas-tenants](saas-tenants)               | One set of plugins serving several tenants.                                                 | `isolate` and `intercept` per tenant, a shared service with per-tenant settings, onboarding and offboarding.      |
 | [market-feed](market-feed)                 | A market data pipeline behind an unreliable exchange.                                       | Supervised background tasks, retry schedules, `Pending` and `Failed` states, optional dependencies.               |
 
+## See the tree
+
+The [visualizer](visualizer) runs a small garden as plugins and serves a live
+map of its own fork tree. Sow a seedling, take the water away, or plant a
+bramble and watch the states change in the browser.
+
 ## Run a sample
 
 The samples import the workspace packages. Node loads these packages from their

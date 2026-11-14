@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Graft 花园 — 插件树的实时地图</title>
+		<meta
+			name="description"
+			content="观察一棵 Graft 插件树在运行中生长、变化与恢复。"
+		/>
+		<link
+			rel="icon"
+			href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%237fb241' d='M25.0156 6.9844A12.75 12.75 0 1 0 25.0156 25.0156L26.6066 23.4246L17.341 14.159L19.5 12L12 12L12 19.5L14.159 17.341L20.0215 23.2035A8.25 8.25 0 1 1 21.8336 10.1664z'/%3E%3C/svg%3E"
+		/>
+		<link rel="stylesheet" href="/style.css" />
+	</head>
+	<body>
+		<div class="grain" aria-hidden="true"></div>
+		<div id="app">
+			<header class="topbar">
+				<div class="brand">
+					<span class="brand-mark" aria-hidden="true">
+						<svg viewBox="0 0 32 32" role="presentation">
+							<path
+								d="M25.0156 6.9844A12.75 12.75 0 1 0 25.0156 25.0156L26.6066 23.4246L17.341 14.159L19.5 12L12 12L12 19.5L14.159 17.341L20.0215 23.2035A8.25 8.25 0 1 1 21.8336 10.1664z"
+							/>
+						</svg>
+					</span>
+					<div class="brand-text">
+						<h1>Graft <em>花园</em></h1>
+						<p>插件树的实时地图</p>
+					</div>
+				</div>
+				<div class="metrics" aria-label="花园概览">
+					<span class="metric"
+						><strong id="count-forks">0</strong> 个 fork</span
+					>
+					<span class="metric"
+						><i class="dot active"></i
+						><strong id="count-active">0</strong> 运行中</span
+					>
+					<span class="metric"
+						><i class="dot loading"></i
+						><strong id="count-loading">0</strong> 加载中</span
+					>
+					<span class="metric"
+						><i class="dot pending"></i
+						><strong id="count-pending">0</strong> 等待中</span
+					>
+					<span class="metric failed-metric" id="failed-metric" hidden
+						><i class="dot failed"></i
+						><strong id="count-failed">0</strong> 失败</span
+					>
+				</div>
+				<div class="status">
+					<span class="connection is-connecting" id="connection"
+						><span class="dot"></span
+						><span id="connection-label">连接中</span></span
+					>
+				</div>
+			</header>
+
+			<main class="workspace">
+				<section class="stage" aria-label="实时插件树">
+					<div class="stage-bar">
+						<div class="stage-title">
+							<span class="eyebrow">花园</span>
+							<span class="stage-summary" id="stage-summary"
+								>正在等待第一份快照</span
+							>
+						</div>
+						<div class="tools" aria-label="花园操作">
+							<button
+								class="tool primary"
+								data-grow="seedling"
+								title="播种一株幼苗（S）"
+							>
+								播种幼苗 <kbd>S</kbd>
+							</button>
+							<button class="tool" data-grow="bamboo" title="种一株竹子（B）">
+								种竹子
+							</button>
+							<button class="tool" data-grow="bramble" title="让花园染病（I）">
+								染病
+							</button>
+							<button class="tool" id="water-button" title="切换水源（W）">
+								断水
+							</button>
+						</div>
+					</div>
+
+					<div class="viewport" id="viewport">
+						<div class="canvas" id="canvas">
+							<svg class="links" id="links" aria-hidden="true"></svg>
+							<div class="nodes" id="nodes"></div>
+						</div>
+
+						<div class="empty" id="empty" hidden>
+							<span class="empty-sprout" aria-hidden="true">✦</span>
+							<p>花园还是空的。</p>
+							<p class="muted">播下一株幼苗开始。</p>
+						</div>
+
+						<div class="zoom" role="group" aria-label="缩放地图">
+							<button id="zoom-out" title="缩小" aria-label="缩小">−</button>
+							<button id="zoom-fit" title="适应窗口（F）">适应</button>
+							<button id="zoom-in" title="放大" aria-label="放大">+</button>
+						</div>
+
+						<div class="legend" aria-label="fork 状态">
+							<span class="legend-item"><i class="dot active"></i>运行中</span>
+							<span class="legend-item"><i class="dot loading"></i>加载中</span>
+							<span class="legend-item"><i class="dot pending"></i>等待中</span>
+							<span class="legend-item"><i class="dot failed"></i>失败</span>
+							<span class="legend-hint">拖动漫游 · 滚轮缩放</span>
+						</div>
+					</div>
+				</section>
+
+				<aside class="inspector" aria-label="详情">
+					<div class="inspector-head">
+						<span class="eyebrow">详情</span>
+						<span class="inspector-count" id="selection-count">未选中</span>
+					</div>
+
+					<div class="empty-inspector" id="inspector-empty">
+						<span class="inspector-ring" aria-hidden="true"></span>
+						<p>选择一个分支，查看它的状态、配置和它拥有的分支。</p>
+					</div>
+
+					<div class="inspect" id="inspector" hidden>
+						<div class="inspect-title-row">
+							<div class="inspect-title">
+								<span class="eyebrow" id="inspect-kind">插件</span>
+								<h2 id="inspect-label"></h2>
+								<code id="inspect-name"></code>
+							</div>
+							<span class="state-chip" id="inspect-state"></span>
+						</div>
+
+						<dl class="facts">
+							<div>
+								<dt>fork</dt>
+								<dd id="inspect-id"></dd>
+							</div>
+							<div>
+								<dt>深度</dt>
+								<dd id="inspect-depth"></dd>
+							</div>
+							<div>
+								<dt>子分支</dt>
+								<dd id="inspect-children"></dd>
+							</div>
+						</dl>
+
+						<div class="inspect-section" id="inspect-detail-wrap" hidden>
+							<h3>状态详情</h3>
+							<pre id="inspect-detail"></pre>
+						</div>
+
+						<div class="inspect-section" id="inspect-input-wrap" hidden>
+							<h3>配置</h3>
+							<pre id="inspect-input"></pre>
+						</div>
+
+						<div class="inspect-actions">
+							<button class="action" id="restart" title="重启这个分支">
+								重启
+							</button>
+							<button class="action danger" id="prune" title="卸载这个分支">
+								移除
+							</button>
+						</div>
+						<p class="hint" id="inspect-hint"></p>
+					</div>
+
+					<div class="inspector-foot">
+						<span class="eyebrow">试试看</span>
+						<p>
+							把水断掉，所有需要水的插件都会变成
+							<span class="pending-text">等待中</span
+							>；再把水接回来，花园就会恢复。
+						</p>
+					</div>
+				</aside>
+			</main>
+
+			<footer class="logs" id="logs">
+				<div class="logs-bar">
+					<div class="logs-title">
+						<span class="live-pulse" aria-hidden="true"></span>
+						实时日志
+						<span class="muted" id="log-count">0</span>
+					</div>
+					<button class="ghost" id="logs-toggle" aria-expanded="true">
+						收起
+					</button>
+				</div>
+				<div class="log-list" id="log-list" role="log" aria-live="polite">
+					<div class="log-empty" id="log-empty">正在等待花园发声……</div>
+				</div>
+			</footer>
+		</div>
+
+		<div class="toast" id="toast" role="status" aria-live="polite"></div>
+		<script type="module" src="/app.js"></script>
+	</body>
+</html>
