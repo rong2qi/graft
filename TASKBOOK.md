@@ -12,7 +12,7 @@
 | T-02 | 建立可视化分支，提供简体中文的实时插件树界面  | 已完成 |
 | T-03 | 本地启动可视化，并在桌面放置启动/停止快捷脚本 | 已完成 |
 | T-04 | 将任务书与对话输出要求写入 `AGENTS.md`        | 已完成 |
-| T-05 | 类型检查、测试、构建、提交与推送验收          | 进行中 |
+| T-05 | 类型检查、测试、构建、提交与推送验收          | 已完成 |
 
 ## 基线
 
@@ -24,6 +24,8 @@
 | 同步前 fork main          | `743779b`（落后 169 个提交）                                                                       |
 | 上游与 fork main 当前提交 | `5c019e5`（`v0.6.0`，`test(remote): expect the reset when a killed unit's barrier socket closes`） |
 | 工作分支                  | `feat/visualizer`                                                                                  |
+| 实现提交                  | `241d65c`（`feat(samples): add a live plugin tree visualizer`）                                    |
+| 规则提交                  | `343a2fd`（`docs: add the project task book and conversation rules`）                              |
 | 可视化包                  | `samples/visualizer`（`@graftland/sample-visualizer`）                                             |
 | 本地地址                  | `http://127.0.0.1:4712`                                                                            |
 | 启动命令                  | `corepack pnpm --filter @graftland/sample-visualizer start`                                        |
@@ -123,9 +125,11 @@
   - `node --check samples/visualizer/public/app.js` -> 通过。
   - `git status --porcelain` -> 提交前仅包含本任务预期文件。
 - **提交与推送**：
-  - 提交：待填写。
-  - 分支：`feat/visualizer`。
-  - 推送：待填写；使用 SSH origin。
+  - 实现提交：`241d65c`。
+  - 任务书与 AGENTS 规则提交：`343a2fd`。
+  - 分支：`feat/visualizer`，已推送到 `origin/feat/visualizer`；使用 SSH
+    origin。
+  - 本验收记录提交后，分支 HEAD 以 `git rev-parse HEAD` 为准。
 - **证据**：
   - 本地健康检查：`curl -fsS http://127.0.0.1:4712/api/health` -> `ok`。
   - 最终状态：11 个 fork，11 个运行中；页面为简体中文。
@@ -156,6 +160,6 @@
 
 ## 变更日志
 
-| 日期       | 变更                                                                                                         |
-| ---------- | ------------------------------------------------------------------------------------------------------------ |
-| 2026-11-14 | 建立任务书；完成 fork 同步；实现并运行简体中文可视化；完成桌面脚本、类型检查、测试与完整构建；待提交与推送。 |
+| 日期       | 变更                                                                                                                                           |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-11-14 | 建立任务书；完成 fork 同步；实现并运行简体中文可视化；完成桌面脚本、类型检查、测试与完整构建；实现提交 241d65c，规则提交 343a2fd，分支已推送。 |
