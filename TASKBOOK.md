@@ -27,6 +27,7 @@
 | 工作分支                  | `feat/visualizer`                                                                                  |
 | 实现提交                  | `241d65c`（`feat(samples): add a live plugin tree visualizer`）                                    |
 | 规则提交                  | `343a2fd`（`docs: add the project task book and conversation rules`）                              |
+| 启动修复提交              | `860e94e`（`fix(samples): bootstrap visualizer dependencies before launch`）                       |
 | 可视化包                  | `samples/visualizer`（`@graftland/sample-visualizer`）                                             |
 | 本地地址                  | `http://127.0.0.1:4712`                                                                            |
 | 启动命令                  | `corepack pnpm --filter @graftland/sample-visualizer start`                                        |
@@ -167,7 +168,7 @@
   - 之后启动约 2.4 秒完成；停止后健康检查为
     `000`，4712 端口不再监听；再次启动恢复 `200`。
   - 桌面包装调用的就是这两个仓库脚本；最终页面仍为简体中文，11 个 fork 全部运行中。
-- **状态**：已完成（2026-11-17）。
+- **状态**：已完成（2026-11-17），修复提交 `860e94e`。
 
 ## 决策记录
 
