@@ -31,6 +31,10 @@ devenv shell -- pnpm --filter @graftland/sample-visualizer start
 Open <http://127.0.0.1:4712>. The listener binds to loopback only and has no
 authentication.
 
+The [launcher](scripts/start.sh) installs workspace dependencies and builds the
+two runtime packages on first use. The macOS desktop shortcut calls the same
+script.
+
 ## What to try
 
 | Action           | What to watch                                                                                                   |

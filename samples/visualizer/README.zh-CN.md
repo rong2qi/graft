@@ -25,6 +25,9 @@ devenv shell -- pnpm --filter @graftland/sample-visualizer start
 
 打开 <http://127.0.0.1:4712>。监听器只绑定回环地址，没有认证。
 
+[启动脚本](scripts/start.sh)
+首次运行时会安装工作区依赖并构建两个运行时包；macOS 桌面快捷方式调用的也是它。
+
 ## 可以试试
 
 | 操作         | 观察什么                                                 |

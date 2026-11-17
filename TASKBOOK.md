@@ -13,6 +13,7 @@
 | T-03 | 本地启动可视化，并在桌面放置启动/停止快捷脚本 | 已完成 |
 | T-04 | 将任务书与对话输出要求写入 `AGENTS.md`        | 已完成 |
 | T-05 | 类型检查、测试、构建、提交与推送验收          | 已完成 |
+| T-06 | 修复桌面启动脚本：依赖缺失时自动安装并启动    | 已完成 |
 
 ## 基线
 
@@ -31,6 +32,8 @@
 | 启动命令                  | `corepack pnpm --filter @graftland/sample-visualizer start`                                        |
 | 桌面启动脚本              | `~/Desktop/Graft 可视化.command`                                                                   |
 | 桌面停止脚本              | `~/Desktop/Graft 可视化（停止）.command`                                                           |
+| 仓库启动脚本              | `samples/visualizer/scripts/start.sh`                                                              |
+| 仓库停止脚本              | `samples/visualizer/scripts/stop.sh`                                                               |
 | 运行日志                  | `.cache/graft-visualizer.log`（随仓库工作区）                                                      |
 | PID 文件                  | `.cache/graft-visualizer.pid`（随仓库工作区）                                                      |
 
@@ -85,6 +88,8 @@
 
 - **目标**：双击桌面脚本即可启动/打开本地可视化，并可停止后台进程。
 - **启动脚本职责**：
+  - 桌面 `.command` 只作为包装，实际逻辑在
+    `samples/visualizer/scripts/start.sh`。
   - 若 `http://127.0.0.1:4712/api/health` 已可用，直接打开浏览器。
   - 否则用 `nohup` 在后台启动
     `corepack pnpm --filter @graftland/sample-visualizer start`，等待健康检查通过后打开浏览器。
@@ -136,6 +141,34 @@
   - 页面截图：`/tmp/graft-final.png`、`/tmp/graft-zh-selected.png`、`/tmp/graft-e2e-drought.png`（本机临时文件，不作为仓库交付物）。
   - 交互验证：在真实页面上点“断水”，橡树和兰花转为等待中，计数为 2；点“浇水”恢复；点“播种幼苗”出现「幼苗 1」并自动选中。
 
+## T-06 桌面启动自举
+
+- **现象**：2026-11-17 双击 `Graft 可视化.command`
+  后弹出「Graft 花园启动超时」。
+- **日志**：`.cache/graft-visualizer.log` 显示
+  `ERR_MODULE_NOT_FOUND: Cannot find package 'effect'`，并提示
+  `samples/visualizer/node_modules` 缺失。
+- **根因**：工作区的 `node_modules` 被清理后，桌面脚本仍直接执行
+  `pnpm ... start`，没有先安装依赖；健康检查等待 20 秒后超时。
+- **修复**：
+  - 把启动/停止逻辑移入仓库内的 `samples/visualizer/scripts/start.sh` 与
+    `stop.sh`，可审查、可复用。
+  - 启动脚本检测根目录和 `samples/visualizer/node_modules`；缺失时执行
+    `CI=true corepack pnpm install --frozen-lockfile --prefer-offline`。
+  - 检测 `packages/core/dist/index.js` 与
+    `packages/plugin-http/dist/index.js`；缺失时按需构建这两个包。
+  - 依赖就绪后再后台启动，健康检查等待时间从 20 秒延长到 120 秒。
+  - 桌面 `.command` 只保留可执行包装，调用仓库脚本。
+- **验收**：
+  - 在缺少 `node_modules` 的状态下执行
+    `samples/visualizer/scripts/start.sh`：日志在 11:05:35 记录
+    `Installing workspace dependencies`，11:06:52 记录安装完成，11:06:53 健康检查通过；耗时约 78 秒，健康检查返回
+    `200`。
+  - 之后启动约 2.4 秒完成；停止后健康检查为
+    `000`，4712 端口不再监听；再次启动恢复 `200`。
+  - 桌面包装调用的就是这两个仓库脚本；最终页面仍为简体中文，11 个 fork 全部运行中。
+- **状态**：已完成（2026-11-17）。
+
 ## 决策记录
 
 1. **main 保持上游一致**：同步后不向 `main`
@@ -163,3 +196,4 @@
 | 日期       | 变更                                                                                                                                           |
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-11-14 | 建立任务书；完成 fork 同步；实现并运行简体中文可视化；完成桌面脚本、类型检查、测试与完整构建；实现提交 241d65c，规则提交 343a2fd，分支已推送。 |
+| 2026-11-17 | 修复桌面启动脚本在依赖缺失时直接超时的问题；增加依赖安装与按需构建，移动到仓库脚本并完成启动/停止/重启验证。                                   |

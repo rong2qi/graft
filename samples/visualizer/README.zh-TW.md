@@ -25,6 +25,9 @@ devenv shell -- pnpm --filter @graftland/sample-visualizer start
 
 開啟 <http://127.0.0.1:4712>。監聽器只綁定回送位址，沒有驗證。
 
+[啟動指令碼](scripts/start.sh)
+第一次執行時會安裝工作區相依並建置兩個執行階段套件；macOS 桌面捷徑呼叫的也是它。
+
 ## 可以試試
 
 | 操作         | 觀察什麼                                                 |
